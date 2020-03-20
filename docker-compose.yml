@@ -1,7 +1,24 @@
 version: '3.7'
 
 services:
+  user:
+    build:
+      context: services/user
+      args:
+        - NODE_ENV=development
+    image: federation/services/user
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/user:/usr/src/app
+      - /usr/src/app/node_modules
+    command: run start:dev
+    ports:
+      - 4001:4001
+
   gateway:
+    depends_on:
+      - user
     build:
       context: services/gateway
       args:
@@ -13,3 +30,5 @@ services:
       - ./services/gateway:/usr/src/app
       - /usr/src/app/node_modules
     command: run start:dev
+    ports:
+      - 4000:4000
