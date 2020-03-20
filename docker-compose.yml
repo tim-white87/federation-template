@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  gateway:
+    build:
+      context: services/gateway
+      args:
+        - NODE_ENV=development
+    image: federation/services/gateway
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/gateway:/usr/src/app
+      - /usr/src/app/node_modules
+    command: run start:dev
