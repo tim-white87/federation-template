@@ -1,20 +1,13 @@
 version: '3.7'
 
 services:
-  user:
-    build:
-      context: services/user
-      args:
-        - NODE_ENV=development
-    image: federation/services/user
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ./services/user:/usr/src/app
-      - /usr/src/app/node_modules
-    command: run start:dev
+  db:
+    image: postgres:12.2-alpine
+    restart: always
     ports:
-      - 4001:4001
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD
 
   gateway:
     depends_on:
@@ -32,3 +25,20 @@ services:
     command: run start:dev
     ports:
       - 4000:4000
+
+  user:
+    depends_on:
+      - db
+    build:
+      context: services/user
+      args:
+        - NODE_ENV=development
+    image: federation/services/user
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./services/user:/usr/src/app
+      - /usr/src/app/node_modules
+    command: run start:dev
+    ports:
+      - 4001:4000
