@@ -1,4 +1,11 @@
+# Node
 node_modules/
 package-lock.json
 
+# Editors
 .vscode/
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.backup
