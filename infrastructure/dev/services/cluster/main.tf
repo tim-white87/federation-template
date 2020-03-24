@@ -2,6 +2,12 @@ provider "aws" {
   region = "us-east-1"
 }
 
+terraform {
+  backend "s3" {
+    key = "dev/services/cluster/terraform.tfstate"
+  }
+}
+
 variable "server_port" {
   description = "The port the server will use for HTTP requests"
   type        = number
