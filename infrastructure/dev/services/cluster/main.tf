@@ -8,12 +8,6 @@ terraform {
   }
 }
 
-variable "server_port" {
-  description = "The port the server will use for HTTP requests"
-  type        = number
-  default     = 8080
-}
-
 data "aws_vpc" "default" {
   default = true
 }
@@ -22,16 +16,32 @@ data "aws_subnet_ids" "default" {
   vpc_id = data.aws_vpc.default.id
 }
 
+data "terraform_remote_state" "db" {
+  backend = "s3"
+
+  config = {
+    bucket = "remote-backend-federation"
+    key    = "dev/data-stores/postgres/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
+data "template_file" "user_data" {
+  template = file("user-data.sh")
+
+  vars = {
+    server_port = var.server_port
+    db_address  = data.terraform_remote_state.db.outputs.address
+    db_port     = data.terraform_remote_state.db.outputs.port
+  }
+}
+
 resource "aws_launch_configuration" "example" {
   image_id        = "ami-07ebfd5b3428b6f4d"
   instance_type   = "t2.micro"
   security_groups = [aws_security_group.instance.id]
   
-  user_data = <<-EOF
-              #!/bin/bash
-              echo "Hello, World" > index.html
-              nohup busybox httpd -f -p ${var.server_port} &
-              EOF
+  user_data       = data.template_file.user_data.rendered
 
   lifecycle {
     create_before_destroy = true
@@ -45,18 +55,18 @@ resource "aws_autoscaling_group" "example" {
   target_group_arns = [aws_lb_target_group.asg.arn]
   health_check_type = "ELB"
 
-  min_size = 2
+  min_size = 1
   max_size = 10
 
   tag {
     key                 = "Name"
-    value               = "terraform-asg-example"
+    value               = "federation-asg-example"
     propagate_at_launch = true
   }
 }
 
 resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
+  name = "federation-example-instance"
 
   ingress {
     from_port   = var.server_port
@@ -67,7 +77,7 @@ resource "aws_security_group" "instance" {
 }
 
 resource "aws_lb" "example" {
-  name               = "terraform-asg-example"
+  name               = "federation-asg-example"
   load_balancer_type = "application"
   subnets            = data.aws_subnet_ids.default.ids
   security_groups    = [aws_security_group.alb.id]
@@ -91,7 +101,7 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_security_group" "alb" {
-  name = "terraform-example-alb"
+  name = "federation-example-alb"
 
   # Allow inbound HTTP requests
   ingress {
@@ -111,7 +121,7 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_lb_target_group" "asg" {
-  name     = "terraform-asg-example"
+  name     = "federation-asg-example"
   port     = var.server_port
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
@@ -140,9 +150,4 @@ resource "aws_lb_listener_rule" "asg" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.asg.arn
   }
-}
-
-output "alb_dns_name" {
-  value       = aws_lb.example.dns_name
-  description = "The domain name of the load balancer"
 }
