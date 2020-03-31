@@ -1,5 +1,9 @@
 terraform {
   required_version = ">= 0.12, < 0.13"
+
+  backend "s3" {
+    key            = "dev/cluster/terraform.tfstate"
+  }
 }
 
 provider "aws" {
@@ -9,7 +13,7 @@ provider "aws" {
 }
 
 module "webserver_cluster" {
-  source = "../../../modules/services/cluster"
+  source = "../../modules/cluster"
 
   cluster_name           = var.cluster_name
   db_remote_state_bucket = var.db_remote_state_bucket

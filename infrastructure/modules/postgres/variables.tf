@@ -1,20 +1,39 @@
-# ---------------------------------------------------------------------------------------------------------------------
-# REQUIRED PARAMETERS
-# You must provide a value for each of these parameters.
-# ---------------------------------------------------------------------------------------------------------------------
+variable "db_name" {
+  description = "The name to use for the database"
+  type        = string
+}
 
 variable "db_password" {
   description = "The password for the database"
   type        = string
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# OPTIONAL PARAMETERS
-# These parameters have reasonable defaults.
-# ---------------------------------------------------------------------------------------------------------------------
+variable "region" {
+  description = "The AWS Region to setup the remote backend in"
+  type = string
+  default = "us-east-1"
+}
 
-variable "db_name" {
-  description = "The name to use for the database"
-  type        = string
-  default     = "federation_database_dev"
+variable "username" {
+  description = "The database username"
+  type = string
+  default = "adminuser"
+}
+
+variable "allocated_storage" {
+  description = "The allocated storage for the database"
+  type = string
+  default = 10
+}
+
+variable "instance_class" {
+  description = "Instance class for the database"
+  type = string
+  default = "db.t2.micro"
+}
+
+variable "identifier" {
+  description = "The RDS identifier"
+  type = string
+  default = null
 }
