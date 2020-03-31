@@ -17,7 +17,7 @@ locals {
 }
 
 module "postgres" {
-   source = "../../modules/postgres"
+   source = "../../../modules/postgres"
 
   identifier = "${local.name}-dev"
   db_name = local.name

@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 module "remote-backend" {
-  source = "../../modules/remote-backend"
+  source = "../../../modules/remote-backend"
 
   backend_name = var.backend_name
 }

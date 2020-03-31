@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 module "webserver_cluster" {
-  source = "../../modules/cluster"
+  source = "../../../modules/cluster"
 
   cluster_name           = var.cluster_name
   db_remote_state_bucket = var.db_remote_state_bucket
