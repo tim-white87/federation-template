@@ -1,5 +1,5 @@
 # backend.hcl
-bucket         = "remote-backend-federation"
+bucket         = "federation-remote-backend"
 region         = "us-east-1"
-dynamodb_table = "remote-backend-federation-locks"
+dynamodb_table = "federation-remote-backend-locks"
 encrypt        = true
