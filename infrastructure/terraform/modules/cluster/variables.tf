@@ -51,3 +51,9 @@ variable "alb_security_group_name" {
   type        = string
   default     = "federation-example-alb"
 }
+
+variable "custom_tags" {
+  description = "Custom tags to set on the Instances in the ASG"
+  type        = map(string)
+  default     = {}
+}
