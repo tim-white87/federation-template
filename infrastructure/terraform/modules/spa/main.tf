@@ -1,7 +1,7 @@
 
 
 resource "aws_s3_bucket" "spa_s3_bucket" {
-  acl = "public-read"
+  acl = "private"
 
   website {
     index_document = "index.html"
@@ -72,7 +72,48 @@ resource "aws_cloudfront_distribution" "spa_cloudfront_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  custom_error_response {
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+
   viewer_certificate {
     cloudfront_default_certificate = true
   }
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  bucket = aws_s3_bucket.spa_s3_bucket.Identity
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Sid": "AddPerm",
+        "Effect": "Deny",
+        "NotPrincipal": {
+            "AWS": "${aws_cloudfront_distribution.spa_cloudfront_distribution.arn}"
+        },
+        "Action": "s3:GetObject",
+        "Resource": "${aws_s3_bucket.spa_s3_bucket.arn}/*"
+    },
+    {
+        "Sid": "2",
+        "Effect": "Allow",
+        "Principal": {
+            "AWS": "${aws_cloudfront_distribution.spa_cloudfront_distribution.arn}"
+        },
+        "Action": "s3:GetObject",
+        "Resource": "${aws_s3_bucket.spa_s3_bucket.arn}/*"
+    }
+  ]
+}
+POLICY
 }
